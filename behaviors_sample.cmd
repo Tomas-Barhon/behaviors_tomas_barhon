@@ -1,2 +1,2 @@
-P:\tools\blue\AddonPacker_64\AddonPacker_x64.exe -s -ap -ac -p MINOTAUR -r -rt -odi -o o:\VBS4-release-24.2.x-2nd\data\BlueProduct\content\bisim_addons\ai\ -i P:\vbs2\customer\plugins\behaviors_sample\
+p:\tools\blue\AddonPacker_64\AddonPacker_x64.exe -s -ap -ac -p THESEUS -r -rt -odi -o o:\VBS4-release-26.1\data\BlueProduct\content\bisim_addons\ai\ -i p:\vbs2\customer\plugins\behaviors_tomas_barhon\
 pause

@@ -1,5 +1,5 @@
 #include "\vbs2\basic_defines.hpp"
-#define __CurrentDir__ \vbs2\customer\plugins\behaviors_sample\
+#define __CurrentDir__ \vbs2\customer\plugins\behaviors_tomas_barhon\
 
 //Class necessary for VBS to load the new addon correctly
 class CfgPatches
@@ -26,10 +26,10 @@ class CfgPatches
 // Adds btset to list of btsets which are loaded automatically
 class CfgBehaviorTrees
 {
-	class behaviors_sample //this is an arbitrary className, it needs to be unique though
+	class behaviors_tomas_barhon //this is an arbitrary className, it needs to be unique though
 	{
-		path = "\vbs2\customer\plugins\behaviors_sample\data\behaviors_sample\behaviors_sample.btset"; //This is the relative path to the BT-set file to load
-		name = "behaviors_sample"; // This is the btset name duplicated in the configuration
+		path = "\vbs2\customer\plugins\behaviors_tomas_barhon\data\behaviors_tomas_barhon\behaviors_tomas_barhon.btset"; //This is the relative path to the BT-set file to load
+		name = "behaviors_tomas_barhon"; // This is the btset name duplicated in the configuration
 	};
 };
 
@@ -38,7 +38,7 @@ class CfgAvailableBehaviors
 {
 	class behaviors_sample
 	{
-		icon = "\vbs2\customer\plugins\behaviors_sample\data\behaviors_sample.paa";
+		icon = "\vbs2\customer\plugins\behaviors_tomas_barhon\data\behaviors_tomas_barhon.paa";
 		allowRotate = true;
 
 
