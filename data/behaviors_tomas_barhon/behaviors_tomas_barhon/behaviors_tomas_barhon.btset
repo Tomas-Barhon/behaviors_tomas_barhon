@@ -1,10 +1,11 @@
 {
   "name": "behaviors_tomas_barhon",
   "trees": [
-    "behavior1.bt"
+    "Theseus\\Advance.bt"
   ],
   "initScripts": [
-    "Theseus\\Theseus.class.lua"
+    "Theseus\\Theseus.class.lua",
+    "classes.lua"
   ],
   "parameters": {},
   "capabilities": {}

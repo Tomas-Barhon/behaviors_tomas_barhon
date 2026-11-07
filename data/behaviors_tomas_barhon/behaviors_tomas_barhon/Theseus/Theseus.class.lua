@@ -18,8 +18,7 @@ return {
                         soldier:IsAlive() and
                         soldier:GetType() == EntityType.Person and
                         (
-                            -- string.match(soldier:GetClassName(), "ru_army")
-                            bb.name == "Minotaur"
+                            bb.name == "Theseus"
                         )
                     then
                         return true
