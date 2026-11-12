@@ -43,12 +43,12 @@
             "if loc.PathFuture:IsReady() then",
             "    loc.path = loc.PathFuture:Value()",
             "",
-            "    loc.NextCorner = 0",
+            "    loc.CornerIndex = 0",
             "    loc.circles = {}",
             "",
             "    local length = loc.path:Length()",
             "    local step = 2.0",
-            "    local threshold = 15",
+            "    local threshold = 10",
             "",
             "    local previousDir = loc.path:DirectionAlongPath(0)",
             "",
@@ -58,10 +58,10 @@
             "        local angle = MathExt.AngleDiff(currentDir, previousDir)",
             "",
             "        if math.abs(angle) > threshold then",
-            "            loc.circles[loc.NextCorner] =",
+            "            loc.circles[loc.CornerIndex] =",
             "                loc.path:PositionAlongPath(distance)",
             "",
-            "            loc.NextCorner = loc.NextCorner + 1",
+            "            loc.CornerIndex = loc.CornerIndex + 1",
             "        end",
             "",
             "        previousDir = currentDir",
@@ -83,10 +83,64 @@
         "if loc.path ~=nil then",
         "ai_core_public.draw.Path(loc.path,1,0,0,1,Vec3(0,0,2))",
         "",
-        "for _,point in pairs( loc.circles) do",
-        "ai_core_public.draw.Circle(point+Vec3(0,0,2),1,1,1,0,1)",
+        "if loc.circles ~= nil then",
+        "\tfor _,point in pairs( loc.circles) do",
+        "\tai_core_public.draw.Circle(point+Vec3(0,0,1),1,1,1,0,1)",
+        "\tend",
         "end",
-        "",
+        "end"
+      ]
+    },
+    {
+      "name": "try to pop",
+      "id": "a4fc56cb-bc47-4f18-b8ef-daccd26adfa0",
+      "type": "selector",
+      "subtrees": [
+        {
+          "name": "pop circles for targetPos",
+          "id": "da74cbd0-bf84-4af7-97bf-6fc7eafc52c7",
+          "type": "scriptAction",
+          "decorators": [
+            {
+              "id": "28e594f0-d01c-4ef3-aadc-8758829ce197",
+              "type": "scriptCondition",
+              "name": "check theseus reached target",
+              "script": [
+                "if loc.targetPos ~= nil then",
+                "\tif self:GetPosition():Distance(loc.targetPos)<1 then",
+                "\treturn true",
+                "\tend",
+                "\treturn false",
+                "elseif loc.targetPos == nil and loc.path ~= nil then",
+                "    return true",
+                "end",
+                "return false"
+              ]
+            }
+          ],
+          "script": [
+            "if #loc.circles >0 then",
+            "\tloc.targetPos = table.remove(loc.circles, 0)",
+            "elseif #loc.circles == 0 and loc.path ~= nil then",
+            "    loc.targetPos = loc.path:EndPoint()",
+            "end"
+          ]
+        },
+        {
+          "name": "Wait Forever",
+          "id": "b4619b0a-c629-4544-bdcb-6345e8fdda85",
+          "type": "waitForever"
+        }
+      ],
+      "active": true
+    },
+    {
+      "name": "Draw target position",
+      "id": "6692172c-1d06-4154-97aa-50972fd3ddfa",
+      "type": "scriptAction",
+      "script": [
+        "if loc.targetPos ~= nil then",
+        "\tai_core_public.draw.Circle(loc.targetPos+Vec3(0,0,1),1,1,0,0,1)",
         "end"
       ]
     },
@@ -95,12 +149,12 @@
       "id": "cf95e898-ad33-4af3-a02c-8f3e5b574b85",
       "type": "scriptAction",
       "script": [
-        "loc.visibleEnemies = self:GetVisibleEnemies(50)",
+        "loc.visibleEnemies = self:GetVisibleEnemies()",
         "loc.Minotaur = loc.visibleEnemies[1]"
       ]
     },
     {
-      "name": "Move if possible",
+      "name": "shoot else move",
       "id": "c5a7cf47-a7ae-49e1-9087-fa09164204da",
       "type": "selector",
       "subtrees": [
@@ -147,24 +201,39 @@
           ]
         },
         {
-          "name": "Move",
-          "id": "3e69ae26-fa1e-4aee-b8ca-b290c3d227de",
-          "type": "move",
+          "name": "move along corners",
+          "id": "38ef85c9-3ecd-4c25-b16c-31ff1ed8e93b",
+          "type": "sequence",
+          "subtrees": [
+            {
+              "name": "Move",
+              "id": "3e69ae26-fa1e-4aee-b8ca-b290c3d227de",
+              "type": "move",
+              "position": [
+                "return loc.targetPos"
+              ]
+            },
+            {
+              "name": "wait on corner",
+              "id": "8f3a4e22-85b1-4c53-9f35-0c32072ea1a4",
+              "type": "wait",
+              "time": [
+                "1"
+              ]
+            }
+          ],
           "decorators": [
             {
               "id": "6745757b-8af2-467a-bd14-f00ac0c2bca1",
               "type": "scriptCondition",
               "name": "check path exists",
               "script": [
-                "if loc.path~=nil then",
+                "if loc.targetPos ~=nil then",
                 "    return true",
                 "end",
                 "return false"
               ]
             }
-          ],
-          "position": [
-            "return loc.path:EndPoint()"
           ]
         },
         {
@@ -182,74 +251,114 @@
       "active": true
     }
   ],
+  "unlinked-trees": [
+    {
+      "name": "<unnamed>",
+      "id": "afc2f0f4-ffff-48e1-adf2-76e14ed58bda",
+      "type": "supervisedParallel",
+      "meta": {
+        "nodesInfo": [
+          {
+            "id": "afc2f0f4-ffff-48e1-adf2-76e14ed58bda",
+            "position": "2500,889.541666666667"
+          }
+        ],
+        "editorObjects": []
+      }
+    }
+  ],
   "meta": {
     "nodesInfo": [
       {
         "id": "2f4bd077-d9c5-41c8-9bd5-41d84b2799e4",
-        "position": "1762.5,392.541666666667"
+        "position": "1762.5,464.541666666667"
       },
       {
         "id": "35e3951d-49fc-4842-801c-98402f824897",
-        "position": "1450,480.041666666667"
+        "position": "1000,514.541666666667"
       },
       {
         "id": "97d308f6-2460-4b75-8ab6-e0a0367f5344",
-        "position": "1625,505.041666666667"
+        "position": "1175,539.541666666667"
       },
       {
         "id": "192a16c9-f200-4e49-8213-08060c421369",
-        "position": "1362.5,680.041666666667"
+        "position": "912.5,714.541666666667"
       },
       {
         "id": "27482252-3b74-4b13-8f8d-20db67e09457",
-        "position": "1575,680.041666666667",
+        "position": "1125,714.541666666667",
         "width": 145.0
       },
       {
         "id": "64591d46-0d76-41ec-8484-cb7961802fcd",
-        "position": "1737.5,680.041666666667",
+        "position": "1287.5,714.541666666667",
         "width": 145.0
       },
       {
         "id": "ffdeedb0-a49c-423a-8d97-ca6674e1844d",
-        "position": "1887.5,680.041666666667"
+        "position": "1450,714.541666666667"
+      },
+      {
+        "id": "a4fc56cb-bc47-4f18-b8ef-daccd26adfa0",
+        "position": "1600,714.541666666667"
+      },
+      {
+        "id": "da74cbd0-bf84-4af7-97bf-6fc7eafc52c7",
+        "position": "1500,827.041666666667"
+      },
+      {
+        "id": "b4619b0a-c629-4544-bdcb-6345e8fdda85",
+        "position": "1737.5,839.541666666667"
+      },
+      {
+        "id": "6692172c-1d06-4154-97aa-50972fd3ddfa",
+        "position": "1787.5,714.541666666667"
       },
       {
         "id": "cf95e898-ad33-4af3-a02c-8f3e5b574b85",
-        "position": "2087.5,667.541666666667"
+        "position": "1950,714.541666666667"
       },
       {
         "id": "c5a7cf47-a7ae-49e1-9087-fa09164204da",
-        "position": "2475,605.041666666667"
+        "position": "2187.5,527.041666666667"
       },
       {
         "id": "8d0d0056-78c5-4cdb-833c-c5b1340a4bc8",
-        "position": "2262.5,792.541666666667"
+        "position": "2137.5,727.041666666667"
       },
       {
         "id": "9dd1f581-0de4-4f1a-a80a-14fac659c746",
-        "position": "2100,967.541666666667"
+        "position": "1975,902.041666666667"
       },
       {
         "id": "8d0f37b1-baff-4f21-a149-4228cfe38d83",
-        "position": "2275,967.541666666667"
+        "position": "2150,902.041666666667"
       },
       {
         "id": "20a1c034-ab3a-4569-9d08-0bfc16727084",
-        "position": "2450,967.541666666667"
+        "position": "2325,902.041666666667"
+      },
+      {
+        "id": "38ef85c9-3ecd-4c25-b16c-31ff1ed8e93b",
+        "position": "2537.5,702.041666666667"
       },
       {
         "id": "3e69ae26-fa1e-4aee-b8ca-b290c3d227de",
-        "position": "2762.5,755.041666666667"
+        "position": "2737.5,889.541666666667"
+      },
+      {
+        "id": "8f3a4e22-85b1-4c53-9f35-0c32072ea1a4",
+        "position": "2912.5,889.541666666667"
       },
       {
         "id": "beb06287-6e3d-475b-9059-f8aa0297d189",
-        "position": "3012.5,717.541666666667"
+        "position": "2687.5,614.541666666667"
       }
     ],
     "editorObjects": [],
-    "canvasSize": "3840,2869.54166666667",
-    "gridPadding": "0,5.04166666666683"
+    "canvasSize": "3840,2941.54166666667",
+    "gridPadding": "0,2.04166666666683"
   },
   "parameters": [
     {
@@ -263,8 +372,10 @@
     "PathFuture": "return nil",
     "path": "return nil",
     "circles": "return {}",
-    "NextCorner": "return nil",
+    "CornerIndex": "return nil",
     "Minotaur": "return nil",
-    "visibleEnemies": "return {}"
+    "visibleEnemies": "return {}",
+    "targetPos": "return nil",
+    "TheseusClose": "return false"
   }
 }
