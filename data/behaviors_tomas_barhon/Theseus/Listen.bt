@@ -1,0 +1,270 @@
+{
+  "name": "wait and listen",
+  "id": "2f4bd077-d9c5-41c8-9bd5-41d84b2799e4",
+  "type": "supervisedParallel",
+  "subtrees": [
+    {
+      "name": "Wait Forever",
+      "id": "35e3951d-49fc-4842-801c-98402f824897",
+      "type": "waitForever"
+    },
+    {
+      "name": "wait for msg and draw",
+      "id": "97d308f6-2460-4b75-8ab6-e0a0367f5344",
+      "type": "sequence",
+      "subtrees": [
+        {
+          "name": "MinotaurPositionUpdate",
+          "id": "192a16c9-f200-4e49-8213-08060c421369",
+          "type": "messageHandler",
+          "subject": "MinotaurPositionUpdate",
+          "handler": [
+            "if msg.value.position then",
+            "\tloc.lastKnownMinotaurPosition = msg.value.position",
+            "end"
+          ]
+        },
+        {
+          "name": "RequestPath",
+          "id": "27482252-3b74-4b13-8f8d-20db67e09457",
+          "type": "scriptAction",
+          "script": [
+            "if loc.lastKnownMinotaurPosition ~=nil",
+            "then",
+            "loc.PathFuture = FindPath(self:GetPosition(),loc.lastKnownMinotaurPosition)",
+            "end"
+          ]
+        },
+        {
+          "name": "Await path",
+          "id": "64591d46-0d76-41ec-8484-cb7961802fcd",
+          "type": "waitUntil",
+          "condition": [
+            "if loc.PathFuture:IsReady() then",
+            "    loc.path = loc.PathFuture:Value()",
+            "",
+            "    loc.NextCorner = 0",
+            "    loc.circles = {}",
+            "",
+            "    local length = loc.path:Length()",
+            "    local step = 2.0",
+            "    local threshold = 15",
+            "",
+            "    local previousDir = loc.path:DirectionAlongPath(0)",
+            "",
+            "    for distance = step, length, step do",
+            "        local currentDir = loc.path:DirectionAlongPath(distance)",
+            "",
+            "        local angle = MathExt.AngleDiff(currentDir, previousDir)",
+            "",
+            "        if math.abs(angle) > threshold then",
+            "            loc.circles[loc.NextCorner] =",
+            "                loc.path:PositionAlongPath(distance)",
+            "",
+            "            loc.NextCorner = loc.NextCorner + 1",
+            "        end",
+            "",
+            "        previousDir = currentDir",
+            "    end",
+            "",
+            "    return true",
+            "else",
+            "    return false",
+            "end"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "DrawPath",
+      "id": "ffdeedb0-a49c-423a-8d97-ca6674e1844d",
+      "type": "scriptAction",
+      "script": [
+        "if loc.path ~=nil then",
+        "ai_core_public.draw.Path(loc.path,1,0,0,1,Vec3(0,0,2))",
+        "",
+        "for _,point in pairs( loc.circles) do",
+        "ai_core_public.draw.Circle(point+Vec3(0,0,2),1,1,1,0,1)",
+        "end",
+        "",
+        "end"
+      ]
+    },
+    {
+      "name": "enemies sensor",
+      "id": "cf95e898-ad33-4af3-a02c-8f3e5b574b85",
+      "type": "scriptAction",
+      "script": [
+        "loc.visibleEnemies = self:GetVisibleEnemies(50)",
+        "loc.Minotaur = loc.visibleEnemies[1]"
+      ]
+    },
+    {
+      "name": "Move if possible",
+      "id": "c5a7cf47-a7ae-49e1-9087-fa09164204da",
+      "type": "selector",
+      "subtrees": [
+        {
+          "name": "aim shoot",
+          "id": "8d0d0056-78c5-4cdb-833c-c5b1340a4bc8",
+          "type": "sequence",
+          "subtrees": [
+            {
+              "name": "Aim",
+              "id": "9dd1f581-0de4-4f1a-a80a-14fac659c746",
+              "type": "scriptAction",
+              "script": [
+                "self:ReqHeadingAimAtEntity(loc.Minotaur)"
+              ]
+            },
+            {
+              "name": "Shoot Minotaur",
+              "id": "8d0f37b1-baff-4f21-a149-4228cfe38d83",
+              "type": "fire",
+              "rounds": [
+                "30"
+              ],
+              "forced": false
+            },
+            {
+              "name": "Reload",
+              "id": "20a1c034-ab3a-4569-9d08-0bfc16727084",
+              "type": "reloadWeapon"
+            }
+          ],
+          "decorators": [
+            {
+              "id": "2ff2ed03-3144-4249-80b3-a91542f8ff44",
+              "type": "scriptCondition",
+              "name": "check whether enemy visible",
+              "script": [
+                "if loc.Minotaur ~=nil then",
+                "    return true",
+                "end",
+                "return false"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Move",
+          "id": "3e69ae26-fa1e-4aee-b8ca-b290c3d227de",
+          "type": "move",
+          "decorators": [
+            {
+              "id": "6745757b-8af2-467a-bd14-f00ac0c2bca1",
+              "type": "scriptCondition",
+              "name": "check path exists",
+              "script": [
+                "if loc.path~=nil then",
+                "    return true",
+                "end",
+                "return false"
+              ]
+            }
+          ],
+          "position": [
+            "return loc.path:EndPoint()"
+          ]
+        },
+        {
+          "name": "wait for first path",
+          "id": "beb06287-6e3d-475b-9059-f8aa0297d189",
+          "type": "waitUntil",
+          "condition": [
+            "if loc.path~=nil then",
+            "    return true",
+            "end",
+            "return false"
+          ]
+        }
+      ],
+      "active": true
+    }
+  ],
+  "meta": {
+    "nodesInfo": [
+      {
+        "id": "2f4bd077-d9c5-41c8-9bd5-41d84b2799e4",
+        "position": "1762.5,392.541666666667"
+      },
+      {
+        "id": "35e3951d-49fc-4842-801c-98402f824897",
+        "position": "1450,480.041666666667"
+      },
+      {
+        "id": "97d308f6-2460-4b75-8ab6-e0a0367f5344",
+        "position": "1625,505.041666666667"
+      },
+      {
+        "id": "192a16c9-f200-4e49-8213-08060c421369",
+        "position": "1362.5,680.041666666667"
+      },
+      {
+        "id": "27482252-3b74-4b13-8f8d-20db67e09457",
+        "position": "1575,680.041666666667",
+        "width": 145.0
+      },
+      {
+        "id": "64591d46-0d76-41ec-8484-cb7961802fcd",
+        "position": "1737.5,680.041666666667",
+        "width": 145.0
+      },
+      {
+        "id": "ffdeedb0-a49c-423a-8d97-ca6674e1844d",
+        "position": "1887.5,680.041666666667"
+      },
+      {
+        "id": "cf95e898-ad33-4af3-a02c-8f3e5b574b85",
+        "position": "2087.5,667.541666666667"
+      },
+      {
+        "id": "c5a7cf47-a7ae-49e1-9087-fa09164204da",
+        "position": "2475,605.041666666667"
+      },
+      {
+        "id": "8d0d0056-78c5-4cdb-833c-c5b1340a4bc8",
+        "position": "2262.5,792.541666666667"
+      },
+      {
+        "id": "9dd1f581-0de4-4f1a-a80a-14fac659c746",
+        "position": "2100,967.541666666667"
+      },
+      {
+        "id": "8d0f37b1-baff-4f21-a149-4228cfe38d83",
+        "position": "2275,967.541666666667"
+      },
+      {
+        "id": "20a1c034-ab3a-4569-9d08-0bfc16727084",
+        "position": "2450,967.541666666667"
+      },
+      {
+        "id": "3e69ae26-fa1e-4aee-b8ca-b290c3d227de",
+        "position": "2762.5,755.041666666667"
+      },
+      {
+        "id": "beb06287-6e3d-475b-9059-f8aa0297d189",
+        "position": "3012.5,717.541666666667"
+      }
+    ],
+    "editorObjects": [],
+    "canvasSize": "3840,2869.54166666667",
+    "gridPadding": "0,5.04166666666683"
+  },
+  "parameters": [
+    {
+      "name": "orderData",
+      "isOptional": false,
+      "defaultValue": ""
+    }
+  ],
+  "locals": {
+    "lastKnownMinotaurPosition": "return nil",
+    "PathFuture": "return nil",
+    "path": "return nil",
+    "circles": "return {}",
+    "NextCorner": "return nil",
+    "Minotaur": "return nil",
+    "visibleEnemies": "return {}"
+  }
+}

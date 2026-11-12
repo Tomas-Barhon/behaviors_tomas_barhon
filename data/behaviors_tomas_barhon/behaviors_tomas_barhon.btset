@@ -1,7 +1,8 @@
 {
   "name": "behaviors_tomas_barhon",
   "trees": [
-    "Theseus\\Advance.bt"
+    "Theseus\\Advance.bt",
+    "Theseus\\Listen.bt"
   ],
   "initScripts": [
     "Theseus\\Theseus.class.lua",

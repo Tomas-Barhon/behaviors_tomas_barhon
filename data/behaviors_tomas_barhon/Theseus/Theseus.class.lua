@@ -1,6 +1,6 @@
 return {
     Theseus = {
-        description = 'An extension of infantryman. Ancient greek hero.',
+        description = 'An extension to Infantryman. The forgetful hero.',
         parents = {
             { btset = 'standard_behaviors', class = 'Infantryman' },
             -- More parent classes can be added. The 'btset' field is optional and defaults to the current project.
@@ -41,12 +41,12 @@ return {
             },
             Idle = {
                 description = 'Idle',
-                tree = 'Patrol',
+                tree = 'Listen',
                 parameters = {},
             },
-            Patrol = {
-                description = 'Patrol',
-                tree = 'Patrol',
+            Listen = {
+                description = 'Listen',
+                tree = 'Listen',
                 parameters = {},
             }
         },
